@@ -1,41 +1,109 @@
-pool:
-  vmImage: "windows-latest"
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+# YAML schema reference:
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
 trigger:
-  - master
-  - refs/tags/*
+- master
 
-pr:
-  - master
+stages:
 
-resources:
-  - repo: self
+- stage: 'Build'
+  variables:
+    buildConfiguration: 'Release'
 
-variables:
-  - name: projectName
-    value: "Microcapital.PostcodeAnywhere"
-  - name: tag
-    value: "$(build.buildId)"
+  jobs:
+  - job:
+    pool:
+      vmImage: 'ubuntu-latest'
 
-steps:
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'restore'
-      feedsToUse: 'select'
+    workspace:
+      clean: all
 
-  - task: DotNetCoreCLI@2
-    displayName: "Build Projects"
-    inputs:
-      command: build
-      projects: "**/**/Microcapital.PostcodeAnywhere.csproj"
-      arguments: "--configuration Release"
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk'
+      inputs:
+        packageType: sdk
+        version: 2.2.x
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+    
+    - task: DotNetCoreCLI@2
+      displayName: "NuGet Restore"
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
 
-  - script: dotnet pack ./src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj --configuration Release --no-build --output $(Build.ArtifactStagingDirectory)/nupkg -p:PackageVersion=1.0.$(Build.BuildId)
-    displayName: "Make package"
+    - task: DotNetCoreCLI@2
+      displayName: "Build Solution"
+      inputs:
+        command: build
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'Create NuGet Package - Release Version'
+      inputs:
+        command: pack
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
+        arguments: '--configuration $(buildConfiguration)'
+        nobuild: true
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'Create NuGet Package - Prerelease Version'
+      inputs:
+        command: pack
+        buildProperties: 'VersionSuffix="$(Build.BuildNumber)"'
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages/prereleases'
+        arguments: '--configuration $(buildConfiguration)'
+        
+    - publish: '$(Build.ArtifactStagingDirectory)/packages'
+      artifact: 'packages'
+        
 
-  - task: PublishBuildArtifacts@1
-    displayName: "Publish Nuget Artifact"
-    inputs:
-      PathtoPublish: "$(Build.ArtifactStagingDirectory)"
-      ArtifactName: "drop"
-      publishLocation: "Container"
+
+- stage: 'PublishPrereleaseNuGetPackage'
+  displayName: 'Publish Prerelease NuGet Package'
+  dependsOn: 'Build'
+  condition: succeeded()
+  jobs:
+  - job:
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - checkout: none
+
+    - download: current
+      artifact: 'packages'
+
+    - task: NuGetCommand@2
+      displayName: 'Push NuGet Package'
+      inputs:
+        command: 'push'
+        packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
+        nuGetFeedType: 'internal'
+        publishVstsFeed: 'Test'
+
+
+        
+- stage: 'PublishReleaseNuGetPackage'
+  displayName: 'Publish Release NuGet Package'
+  dependsOn: 'PublishPrereleaseNuGetPackage'
+  condition: succeeded()
+  jobs:
+  - deployment:
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'nuget-org'
+    strategy:
+     runOnce:
+       deploy:
+         steps:
+         - task: NuGetCommand@2
+           displayName: 'Push NuGet Package'
+           inputs:
+             command: 'push'
+             packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
+             nuGetFeedType: 'external'
+             publishFeedCredentials: 'NuGet'
