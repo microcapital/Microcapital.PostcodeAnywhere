@@ -1,55 +1,50 @@
-name: $(Date:yyyyMMdd)$(Rev:r)
+pool:
+  vmImage: "windows-latest"
 
-stages:
+trigger:
+  - master
+  - refs/tags/*
 
-- stage: Build
-  jobs:
-  - job: BuildTestAndPack
-    pool:
-      vmImage: 'Ubuntu 16.04'
+pr:
+  - master
 
-    variables:
-      buildConfiguration: 'Release'
-      versionMajor: 1
-      versionMinor: 1
-      versionPatch: 5
+resources:
+  - repo: self
 
-    steps:
-    - powershell: |
-        $mainVersion = "$(versionMajor).$(versionMinor).$(versionPatch)"
-        $commitId = "$(Build.SourceVersion)".Substring(0,7)
-        Write-Host "##vso[task.setvariable variable=mainVersion]$mainVersion"
-        Write-Host "##vso[task.setvariable variable=semanticVersion]$mainVersion+$(Build.BuildNumber).$commitId"
-        Write-Host "##vso[task.setvariable variable=assemblyVersion]$(versionMajor).0.0"
-      name: SetVariables
-    - powershell: |
-        Write-Host 'mainVersion: $(mainVersion)'
-        Write-Host 'semanticVersion: $(semanticVersion)'
-        Write-Host 'assemblyVersion: $(assemblyVersion)'
-      name: PrintVariables
-    - powershell: |
-        dotnet build --configuration $(buildConfiguration)
-        dotnet test --configuration $(buildConfiguration) --logger trx
-        dotnet pack --configuration Release /p:AssemblyVersion='$(assemblyVersion)' /p:FileVersion='$(mainVersion)' /p:InformationalVersion='$(semanticVersion)' /p:Version='$(mainVersion)' --output '$(Build.ArtifactStagingDirectory)'
-      name: BuildTestAndPack
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testRunner: VSTest
-        testResultsFiles: '**/*.trx'
+variables:
+  - name: projectName
+    value: "Microcapital.PostcodeAnywhere"
+  - name: tag
+    value: "$(build.buildId)"
 
-    - task: PublishBuildArtifacts@1
+steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: "sdk"
+      version: "3.1.x"
+  - task: NuGetToolInstaller@1
+    inputs:
+      versionSpec: 5.4.0
+  - script: |
+      nuget.exe update -self
+    displayName: "Add Nuget creds"
 
-- stage: ReleaseNugetPackage
-  jobs:
-  - deployment: ReleaseNugetPackage
-    environment: NuGet
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: NuGetToolInstaller@1
-            displayName: 'Install NuGet'
-            
-          - script: nuget push $(Pipeline.Workspace)\**\*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(nuget.apikey) -SkipDuplicate -NoSymbols
-            displayName: 'Push to NuGet.org'
+  - script: dotnet restore Microcapital.PostcodeAnywhere.sln --configfile NuGet.config
+    displayName: "Restore Packages"
+
+  - task: DotNetCoreCLI@2
+    displayName: "Build Projects"
+    inputs:
+      command: build
+      projects: "**/Microcapital.PostcodeAnywhere.csproj"
+      arguments: "--configuration Release"
+
+  - script: dotnet pack ./src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj --configuration Release --no-build --output $(Build.ArtifactStagingDirectory)/nupkg -p:PackageVersion=1.0.$(Build.BuildId)
+    displayName: "Make package"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Nuget Artifact"
+    inputs:
+      PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+      ArtifactName: "drop"
+      publishLocation: "Container"
