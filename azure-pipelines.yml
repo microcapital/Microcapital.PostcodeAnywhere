@@ -18,7 +18,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: 'restore'
-    restoreSolution: '**/*.sln'
+    restoreSolution: '**/**/*.sln'
     feedsToUse: 'select'
 - task: NuGetCommand@2
   inputs:
@@ -30,4 +30,11 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    publishVstsFeed: 'https://pkgs.dev.azure.com/microcapitaluk/_packaging/microcapitaluk/nuget/v3/index.json'
+    allowPackageConflicts: true
 
