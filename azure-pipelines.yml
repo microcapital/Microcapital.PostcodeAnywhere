@@ -1,46 +1,55 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+name: $(Date:yyyyMMdd)$(Rev:r)
 
-trigger:
-- master
+stages:
 
-pool:
-  vmImage: 'windows-latest'
+- stage: Build
+  jobs:
+  - job: BuildTestAndPack
+    pool:
+      vmImage: 'Ubuntu 16.04'
 
-variables:
-  BuildConfiguration: 'Release'
-  BuildPlatform : 'Any CPU'
-  BuildVersion: 1.4.$(Build.BuildId) #Version 1.3+ contains C# 8 nullable types
+    variables:
+      buildConfiguration: 'Release'
+      versionMajor: 1
+      versionMinor: 1
+      versionPatch: 5
 
-steps:
+    steps:
+    - powershell: |
+        $mainVersion = "$(versionMajor).$(versionMinor).$(versionPatch)"
+        $commitId = "$(Build.SourceVersion)".Substring(0,7)
+        Write-Host "##vso[task.setvariable variable=mainVersion]$mainVersion"
+        Write-Host "##vso[task.setvariable variable=semanticVersion]$mainVersion+$(Build.BuildNumber).$commitId"
+        Write-Host "##vso[task.setvariable variable=assemblyVersion]$(versionMajor).0.0"
+      name: SetVariables
+    - powershell: |
+        Write-Host 'mainVersion: $(mainVersion)'
+        Write-Host 'semanticVersion: $(semanticVersion)'
+        Write-Host 'assemblyVersion: $(assemblyVersion)'
+      name: PrintVariables
+    - powershell: |
+        dotnet build --configuration $(buildConfiguration)
+        dotnet test --configuration $(buildConfiguration) --logger trx
+        dotnet pack --configuration Release /p:AssemblyVersion='$(assemblyVersion)' /p:FileVersion='$(mainVersion)' /p:InformationalVersion='$(semanticVersion)' /p:Version='$(mainVersion)' --output '$(Build.ArtifactStagingDirectory)'
+      name: BuildTestAndPack
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testRunner: VSTest
+        testResultsFiles: '**/*.trx'
 
-- task: NuGetCommand@2
-  inputs:
-    command: 'restore'
-    restoreSolution: '**/*.sln'
-    feedsToUse: 'select'
+    - task: PublishBuildArtifacts@1
 
-
-- task: MSBuild@1
-  inputs:
-    solution: '**/*.sln'
-- task: NuGetCommand@2
-  inputs:
-    command: 'pack'
-    packagesToPack: '**/*.csproj'
-    versioningScheme: 'off'
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-
-- task: NuGetCommand@2
-  displayName: 'NuGet push'
-  inputs:
-    command: push
-    publishVstsFeed: 'https://pkgs.dev.azure.com/microcapitaluk/_packaging/microcapitaluk/nuget/v3/index.json'
-    allowPackageConflicts: true
-
+- stage: ReleaseNugetPackage
+  jobs:
+  - deployment: ReleaseNugetPackage
+    environment: NuGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: NuGetToolInstaller@1
+            displayName: 'Install NuGet'
+            
+          - script: nuget push $(Pipeline.Workspace)\**\*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(nuget.apikey) -SkipDuplicate -NoSymbols
+            displayName: 'Push to NuGet.org'
