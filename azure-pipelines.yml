@@ -15,12 +15,9 @@ variables:
   BuildVersion: 1.4.$(Build.BuildId) #Version 1.3+ contains C# 8 nullable types
 
 steps:
-
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'restore'
-    feedsToUse: 'select'
-
+    command: 'build'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
