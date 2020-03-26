@@ -19,12 +19,12 @@ steps:
   displayName: Restore
   inputs:
     command: restore
-    projects: src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
+    projects: Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
 
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
-    projects: src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
+    projects: Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
     arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
@@ -32,7 +32,7 @@ steps:
   inputs:
     command: publish
     publishWebProjects: false
-    projects: src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
+    projects: Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
     arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
     zipAfterPublish: false
 
