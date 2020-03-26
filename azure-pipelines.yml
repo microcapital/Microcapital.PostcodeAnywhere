@@ -22,13 +22,6 @@ steps:
     inputs:
       packageType: "sdk"
       version: "3.1.x"
-  - task: NuGetToolInstaller@1
-    inputs:
-      versionSpec: 5.4.0
-  - script: |
-      nuget.exe update -self
-    displayName: "Add Nuget creds"
-
   - script: dotnet restore
     displayName: "Restore Packages"
 
