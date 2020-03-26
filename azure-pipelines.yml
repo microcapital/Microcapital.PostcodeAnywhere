@@ -22,12 +22,15 @@ steps:
     restoreSolution: '**/*.sln'
     feedsToUse: 'select'
 
+
+- task: MSBuild@1
+  inputs:
+    solution: '**/*.sln'
 - task: NuGetCommand@2
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
     versioningScheme: 'off'
-    buildProperties: 'Platform=Any CPU'
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
