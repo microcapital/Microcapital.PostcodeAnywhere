@@ -29,14 +29,14 @@ steps:
       nuget.exe update -self
     displayName: "Add Nuget creds"
 
-  - script: dotnet restore Microcapital.PostcodeAnywhere.sln --configfile NuGet.config
+  - script: dotnet restore
     displayName: "Restore Packages"
 
   - task: DotNetCoreCLI@2
     displayName: "Build Projects"
     inputs:
       command: build
-      projects: "**/Microcapital.PostcodeAnywhere.csproj"
+      projects: "**/**/Microcapital.PostcodeAnywhere.csproj"
       arguments: "--configuration Release"
 
   - script: dotnet pack ./src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj --configuration Release --no-build --output $(Build.ArtifactStagingDirectory)/nupkg -p:PackageVersion=1.0.$(Build.BuildId)
