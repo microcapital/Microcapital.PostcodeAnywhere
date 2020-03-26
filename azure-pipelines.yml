@@ -15,37 +15,19 @@ variables:
   BuildVersion: 1.4.$(Build.BuildId) #Version 1.3+ contains C# 8 nullable types
 
 steps:
-- task: DotNetCoreCLI@2
-  displayName: Restore
+- task: NuGetCommand@2
   inputs:
-    command: restore
-    projects: Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
-
+    command: 'restore'
+    restoreSolution: '**/*.sln'
+    feedsToUse: 'select'
 - task: DotNetCoreCLI@2
-  displayName: Build
   inputs:
-    projects: Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
-    arguments: '--configuration $(BuildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: Publish
-  inputs:
-    command: publish
-    publishWebProjects: false
-    projects: Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
-    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
-    zipAfterPublish: false
-
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet pack'
-  inputs:
-    command: pack
-    packagesToPack: src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj
-    versioningScheme: byEnvVar
-    versionEnvVar: BuildVersion
-
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    versioningScheme: 'off'
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
   inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
 
