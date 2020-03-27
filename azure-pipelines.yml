@@ -72,15 +72,18 @@ stages:
       vmImage: 'ubuntu-latest'
 
     steps:
-    - checkout: none
-    - download: current
-      artifact: 'packages'
 
-
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'specific'
+        project: '902d1f2d-95b2-4c52-9025-738d8a9663fe'
+        definition: '3'
+        buildVersionToDownload: 'latest'
+        targetPath: '$(Pipeline.Workspace)'
     - task: NuGetCommand@2
       inputs:
         command: 'push'
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/prereleases/*.nupkg;!$(Build.ArtifactStagingDirectory)/packages/prereleases/*.symbols.nupkg'
+        packagesToPush: '$(Pipeline.Workspace)\packages\prereleases\*.nupkg;!$($(Pipeline.Workspace)\packages\prereleases\*.symbols.nupkg'
         nuGetFeedType: 'internal'
         publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
         allowPackageConflicts: true
