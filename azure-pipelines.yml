@@ -83,7 +83,7 @@ stages:
     - task: NuGetCommand@2
       inputs:
         command: 'push'
-        packagesToPush: '$(Pipeline.Workspace)\packages\prereleases\*.nupkg;!$($(Pipeline.Workspace)\packages\prereleases\*.symbols.nupkg'
+        packagesToPush: '$(Pipeline.Workspace)/a/packages/prereleases/*.nupkg'
         nuGetFeedType: 'internal'
         publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
         allowPackageConflicts: true
