@@ -82,9 +82,10 @@ stages:
       inputs:
         command: 'push'
         packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
-        feedPublish: 'TestFeed'
+        publishVstsFeed: 'TestFeed'
         nuGetFeedType: 'internal'
         allowPackageConflicts: true
+
 
 
         
