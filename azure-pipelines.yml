@@ -73,19 +73,15 @@ stages:
 
     steps:
     - checkout: none
-
     - download: current
       artifact: 'packages'
 
+
     - task: NuGetCommand@2
-      displayName: 'Push NuGet Package'
       inputs:
         command: 'push'
-        packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
-        publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/prereleases/*.nupkg;!$(Build.ArtifactStagingDirectory)/packages/prereleases/*.symbols.nupkg'
         nuGetFeedType: 'internal'
+        publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
+        allowPackageConflicts: true
 
-
-
-
-        
