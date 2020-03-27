@@ -82,7 +82,7 @@ stages:
       inputs:
         command: 'push'
         packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
-        feedPublish: 'TestFeed'
+        feedPublish: 'microcapitalfeed'
         nuGetFeedType: 'internal'
         allowPackageConflicts: true
 
