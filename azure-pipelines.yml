@@ -83,8 +83,8 @@ stages:
         command: 'push'
         packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
         nuGetFeedType: 'internal'
-        vstsFeed: 'lb-libraries/TestFeed'
         publishVstsFeed: 'TestFeed'
+        allowPackageConflicts: true
 
 
         
