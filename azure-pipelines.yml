@@ -76,7 +76,10 @@ stages:
     - download: current
       artifact: 'packages'
 
-
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        targetPath: '$(Pipeline.Workspace)'
     - task: NuGetCommand@2
       inputs:
         command: 'push'
