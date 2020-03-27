@@ -76,14 +76,11 @@ stages:
     - download: current
       artifact: 'packages'
 
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: 'current'
-        targetPath: '$(Pipeline.Workspace)'
+
     - task: NuGetCommand@2
       inputs:
         command: 'push'
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/prereleases/*.nupkg;!$(Build.ArtifactStagingDirectory)/prereleases/*.symbols.nupkg'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/prereleases/*.nupkg;!$(Build.ArtifactStagingDirectory)/packages/prereleases/*.symbols.nupkg'
         nuGetFeedType: 'internal'
         publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
         allowPackageConflicts: true
