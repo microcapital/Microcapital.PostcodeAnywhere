@@ -62,29 +62,5 @@ stages:
         
 
 
-- stage: 'PublishPrereleaseNuGetPackage'
-  displayName: 'Publish Prerelease NuGet Package'
-  dependsOn: 'Build'
-  condition: succeeded()
-  jobs:
-  - job:
-    pool:
-      vmImage: 'ubuntu-latest'
 
-    steps:
-
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: 'specific'
-        project: '902d1f2d-95b2-4c52-9025-738d8a9663fe'
-        definition: '3'
-        buildVersionToDownload: 'latest'
-        targetPath: '$(Pipeline.Workspace)'
-    - task: NuGetCommand@2
-      inputs:
-        command: 'push'
-        packagesToPush: '$(Pipeline.Workspace)/a/packages/prereleases/*.nupkg'
-        nuGetFeedType: 'internal'
-        publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
-        allowPackageConflicts: true
 
