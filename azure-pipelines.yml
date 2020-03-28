@@ -57,8 +57,10 @@ stages:
         versionEnvVar: GitVersion.NuGetVersion    
         configuration: release
         
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
+
+    - task: DotNetCoreCLI@2 
+      displayName: 'dotnet nuget push' 
+      inputs: 
+        command: push 
+        publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323' 
+        versioningScheme: byBuildNumber
