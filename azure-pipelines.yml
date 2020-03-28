@@ -36,25 +36,24 @@ stages:
       inputs: 
         version: 2.2.104
  
-    - task: DotNetCoreCLI@2
-      displayName: "NuGet Restore"
+    - task: NuGetCommand@2
       inputs:
-        command: restore
-        projects: '**/*.csproj'
+        command: 'restore'
+        restoreSolution: '**/*.sln'
+        feedsToUse: 'select'
+        vstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
 
-
-    - task: DotNetCoreCLI@2
-      displayName: "NuGet pack"
+    - task: NuGetCommand@2
       inputs:
         command: 'pack'
         packagesToPack: '**/*.csproj'
-        nobuild: true 
-        versioningScheme: byEnvVar
+        versioningScheme: 'byEnvVar'
         versionEnvVar: GitVersion.NuGetVersion
  
-    - task: DotNetCoreCLI@2 
-      displayName: 'dotnet nuget push' 
-      inputs: 
-        command: push 
-        publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323' 
-        versioningScheme: byBuildNumber
+    - task: NuGetCommand@2
+      inputs:
+        command: 'push'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        nuGetFeedType: 'internal'
+        publishVstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
+
