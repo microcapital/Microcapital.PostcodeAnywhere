@@ -42,20 +42,19 @@ stages:
         command: restore
         projects: '**/*.csproj'
 
-    - task: DotNetCoreCLI@2 
-      displayName: 'dotnet build' 
-      inputs: 
-        projects: '$(Parameters.projects)' 
-        arguments: '--configuration $(BuildConfiguration) /p:Version=$(GitVersion.NuGetVersion)' 
-        versioningScheme: byBuildNumber
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: './**/*.csproj'
+        arguments: '--configuration $(BuildConfiguration) /p:Version=$(GitVersion.NuGetVersion)'
  
     - task: DotNetCoreCLI@2
-      displayName: 'dotnet pack' 
-      inputs: 
-        command: pack
-        packagesToPack: '$(Parameters.projects)' 
+      inputs:
+        command: 'pack'
+        packagesToPack: '**/*.csproj'
         nobuild: true 
-        versioningScheme: byEnvVar 
+        versioningScheme: byEnvVar
         versionEnvVar: GitVersion.NuGetVersion
  
     - task: DotNetCoreCLI@2 
