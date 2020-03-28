@@ -26,6 +26,7 @@ stages:
     steps:
 
     - task: NuGetCommand@2
+      displayName: 'install GitVersion'
       inputs:
        command: custom
        arguments: install GitVersion.CommandLine -Version 4.0.0 -OutputDirectory $(Build.BinariesDirectory)/tools -ExcludeVersion
@@ -37,6 +38,7 @@ stages:
         version: 2.2.104
  
     - task: NuGetCommand@2
+      displayName: 'nuget restore'
       inputs:
         command: 'restore'
         restoreSolution: '**/*.sln'
@@ -44,13 +46,14 @@ stages:
         vstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
 
     - task: NuGetCommand@2
+      displayName: 'nuget pack'
       inputs:
         command: 'pack'
         packagesToPack: '**/*.csproj'
         versioningScheme: 'byEnvVar'
-        versionEnvVar: GitVersion.NuGetVersion
  
     - task: NuGetCommand@2
+      displayName: 'nuget push'
       inputs:
         command: 'push'
         packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
