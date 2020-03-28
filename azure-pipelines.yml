@@ -41,8 +41,7 @@ stages:
       inputs: 
         command: restore 
         projects: '$(Parameters.projects)' 
-        vstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323' 
-        includeNuGetOrg: false 
+        includeNuGetOrg: true 
         versioningScheme: byBuildNumber
  
     - task: DotNetCoreCLI@2 
