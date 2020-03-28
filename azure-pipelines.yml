@@ -25,9 +25,11 @@ stages:
 
     steps:
 
-    - task: GitVersion@5
+    - task: NuGetCommand@2
       inputs:
-        runtime: 'full'
+       command: custom
+       arguments: install GitVersion.CommandLine -Version 4.0.0 -OutputDirectory $(Build.BinariesDirectory)/tools -ExcludeVersion
+    - script: mono $(Build.BinariesDirectory)/tools/GitVersion.CommandLine/tools/GitVersion.exe /output buildserver /nofetch
 
     - task: DotNetCoreInstaller@0
       displayName: 'Use .NET Core sdk 2.2.104' 
