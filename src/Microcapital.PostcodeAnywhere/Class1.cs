@@ -11,5 +11,10 @@ namespace Microcapital.PostcodeAnywhere
         {
             _count = 3;
         }
+
+        public int Count()
+        {
+            return _count;
+        }
     }
 }
