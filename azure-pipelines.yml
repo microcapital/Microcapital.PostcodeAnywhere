@@ -40,13 +40,21 @@ stages:
         feedsToUse: 'select'
         vstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
 
-    - task: DotNetCoreCLI@2 
-      displayName: 'dotnet build' 
-      inputs: 
-        projects: '$(Parameters.projects)' 
-        arguments: '--configuration $(BuildConfiguration) /p:Version=$(GitVersion.NuGetVersion)' 
+    - task: DotNetCoreCLI@2
+      displayName: "Build Solution"
+      inputs:
+        command: build
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) /p:Version=$(GitVersion.NuGetVersion)'
         versioningScheme: byBuildNumber
-
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'Create NuGet Package - Release Version'
+      inputs:
+        command: pack
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
+        arguments: '--configuration $(buildConfiguration)'
+        nobuild: true
 
  
     - task: NuGetCommand@2
