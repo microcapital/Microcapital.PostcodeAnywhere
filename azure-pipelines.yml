@@ -45,15 +45,13 @@ stages:
         projects: '**/*.csproj'
         arguments: '--configuration $(buildConfiguration) /p:Version=$(GitVersion.NuGetVersion)'
         versioningScheme: byBuildNumber
-    
+        
+        
     - task: DotNetCoreCLI@2
-      displayName: 'Create NuGet Package - Release Version'
-      inputs:
+      displayName: 'dotnet pack' 
+      inputs: 
         command: pack
-        packDirectory: '$(build.ArtifactStagingDirectory)/packages/releases'
-        arguments: '--configuration $(buildConfiguration)'
-        nobuild: true
-        
-        
-
-
+        packagesToPack: '$(Parameters.projects)' 
+        nobuild: true 
+        versioningScheme: byEnvVar 
+        versionEnvVar: GitVersion.NuGetVersion    
