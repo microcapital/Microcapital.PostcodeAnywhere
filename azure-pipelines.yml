@@ -44,13 +44,6 @@ stages:
 
 
     - task: DotNetCoreCLI@2
-      displayName: "NuGet build"
-      inputs:
-        command: 'build'
-        projects: '**/*.csproj'
-        arguments: '--configuration $(BuildConfiguration) /p:Version=$(GitVersion.NuGetVersion)'
- 
-    - task: DotNetCoreCLI@2
       displayName: "NuGet pack"
       inputs:
         command: 'pack'
