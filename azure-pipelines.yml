@@ -37,14 +37,6 @@ stages:
         version: 2.2.104
  
     - task: DotNetCoreCLI@2 
-      displayName: 'dotnet restore from feed' 
-      inputs: 
-        command: restore 
-        projects: '$(Parameters.projects)' 
-        includeNuGetOrg: true 
-        versioningScheme: byBuildNumber
- 
-    - task: DotNetCoreCLI@2 
       displayName: 'dotnet build' 
       inputs: 
         projects: '$(Parameters.projects)' 
