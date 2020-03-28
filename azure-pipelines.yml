@@ -25,13 +25,11 @@ stages:
 
     steps:
 
-    - task: NuGetCommand@2
-      displayName: 'install GitVersion'
+
+    - task: GitVersion@5
       inputs:
-       command: custom
-       arguments: install GitVersion.CommandLine -Version 4.0.0 -OutputDirectory $(Build.BinariesDirectory)/tools -ExcludeVersion
-    - script: mono $(Build.BinariesDirectory)/tools/GitVersion.CommandLine/tools/GitVersion.exe /output buildserver /nofetch
- 
+        runtime: 'core'
+
     - task: NuGetCommand@2
       displayName: 'nuget restore'
       inputs:
