@@ -52,8 +52,13 @@ stages:
       inputs: 
         command: pack
         packagesToPack: '**/*.csproj'
-        packDirectory: '$(build.ArtifactStagingDirectory)/packages/releases'
         nobuild: true 
         versioningScheme: byEnvVar 
         versionEnvVar: GitVersion.NuGetVersion    
         configuration: release
+        
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
