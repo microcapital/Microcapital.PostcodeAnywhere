@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microcapital.PostcodeAnywhere
 {
-    class Class1
+    public class Class1
     {
     }
 }
