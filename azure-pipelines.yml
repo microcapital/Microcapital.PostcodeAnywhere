@@ -55,4 +55,4 @@ stages:
         nobuild: true 
         versioningScheme: byEnvVar 
         versionEnvVar: GitVersion.NuGetVersion    
-        configuration: Release
+        configuration: release
