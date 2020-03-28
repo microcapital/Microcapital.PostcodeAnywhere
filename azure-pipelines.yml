@@ -41,7 +41,7 @@ stages:
       inputs: 
         command: restore 
         projects: '$(Parameters.projects)' 
-        vstsFeed: '168c2416-9cd1-4e62-e89vb-5665da67a44c' 
+        vstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323' 
         includeNuGetOrg: false 
         versioningScheme: byBuildNumber
  
