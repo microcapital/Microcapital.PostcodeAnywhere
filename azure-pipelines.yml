@@ -1,38 +1,66 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+# YAML schema reference:
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
 trigger:
 - master
 
-pool:
-  vmImage: 'windows-latest'
+stages:
 
-variables:
-  BuildConfiguration: 'Release'
-  BuildPlatform : 'Any CPU'
-  BuildVersion: 1.4.$(Build.BuildId) #Version 1.3+ contains C# 8 nullable types
+- stage: 'Build'
+  variables:
+    buildConfiguration: 'Release'
 
-steps:
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    packagesToPack: '**/*.csproj'
-    versioningScheme: 'off'
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+  jobs:
+  - job:
+    pool:
+      vmImage: 'ubuntu-latest'
 
-- task: NuGetCommand@2
-  displayName: 'NuGet push'
-  inputs:
-    command: push
-    publishVstsFeed: 'https://pkgs.dev.azure.com/microcapitaluk/_packaging/microcapitaluk/nuget/v3/index.json'
-    allowPackageConflicts: true
+    workspace:
+      clean: all
+
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk'
+      inputs:
+        packageType: sdk
+        version: 2.2.x
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+    
+    - task: DotNetCoreCLI@2
+      displayName: "NuGet Restore"
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: "Build Solution"
+      inputs:
+        command: build
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'Create NuGet Package - Release Version'
+      inputs:
+        command: pack
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
+        arguments: '--configuration $(buildConfiguration)'
+        nobuild: true
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'Create NuGet Package - Prerelease Version'
+      inputs:
+        command: pack
+        buildProperties: 'VersionSuffix="$(Build.BuildNumber)"'
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages/prereleases'
+        arguments: '--configuration $(buildConfiguration)'
+        
+    - publish: '$(Build.ArtifactStagingDirectory)/packages'
+      artifact: 'packages'
+        
+
+
+
 
