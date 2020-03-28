@@ -28,7 +28,6 @@ stages:
     - task: GitVersion@5
       inputs:
         runtime: 'full'
-        preferBundledVersion: false
 
     - task: DotNetCoreInstaller@0
       displayName: 'Use .NET Core sdk 2.2.104' 
