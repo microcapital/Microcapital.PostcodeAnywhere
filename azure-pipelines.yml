@@ -57,7 +57,7 @@ stages:
         packDirectory: '$(Build.ArtifactStagingDirectory)/packages/prereleases'
         arguments: '--configuration $(buildConfiguration)'
         
-    - publish: '$(Build.ArtifactStagingDirectory)/packages'
+    - publish: '$(Build.ArtifactStagingDirectory)/packages/prereleases'
       artifact: 'packages'
         
 
