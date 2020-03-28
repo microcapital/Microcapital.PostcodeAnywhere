@@ -27,5 +27,5 @@ stages:
        command: custom
        arguments: install GitVersion.CommandLine -Version 4.0.0 -OutputDirectory $(Build.BinariesDirectory)/tools -ExcludeVersion
     - script: mono $(Build.BinariesDirectory)/tools/GitVersion.CommandLine/tools/GitVersion.exe /output buildserver /nofetch
-    - script: dotnet build ./Microcapital.PostcodeAnywhere.sln -c Release /p:Version='$(GitVersion.NuGetVersion)'
+    - script: dotnet build ./src/Microcapital.PostcodeAnywhere.sln -c Release /p:Version='$(GitVersion.NuGetVersion)'
     - script: dotnet pack ./src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj -c Release --no-build -o '$(build.artifactStagingDirectory)'
