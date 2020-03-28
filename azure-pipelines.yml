@@ -36,6 +36,12 @@ stages:
       inputs: 
         version: 2.2.104
  
+    - task: DotNetCoreCLI@2
+      displayName: "NuGet Restore"
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+
     - task: DotNetCoreCLI@2 
       displayName: 'dotnet build' 
       inputs: 
