@@ -9,7 +9,7 @@ namespace Microcapital.PostcodeAnywhere
         private int _count = 1;
         public Class1()
         {
-
+            _count = 3;
         }
     }
 }
