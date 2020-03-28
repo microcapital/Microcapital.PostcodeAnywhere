@@ -49,7 +49,7 @@ stages:
       displayName: 'nuget pack'
       inputs:
         command: 'pack'
-        packagesToPack: '**/*.csproj'
+        packagesToPack: '**/**/*.csproj'
         versioningScheme: 'byEnvVar'
  
     - task: NuGetCommand@2
