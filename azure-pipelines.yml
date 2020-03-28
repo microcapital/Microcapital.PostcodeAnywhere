@@ -16,16 +16,49 @@ stages:
   - job:
     pool:
       vmImage: 'ubuntu-latest'
+ 
+    variables: 
+      BuildConfiguration: 'release'
 
     workspace:
       clean: all
 
     steps:
 
-    - task: NuGetCommand@2
+
+    - task: GitVersion@5
       inputs:
-       command: custom
-       arguments: install GitVersion.CommandLine -Version 4.0.0 -OutputDirectory $(Build.BinariesDirectory)/tools -ExcludeVersion
-    - script: mono $(Build.BinariesDirectory)/tools/GitVersion.CommandLine/tools/GitVersion.exe /output buildserver /nofetch
-    - script: dotnet build ./src/Microcapital.PostcodeAnywhere.sln -c Release /p:Version='$(GitVersion.NuGetVersion)'
-    - script: dotnet pack ./src/Microcapital.PostcodeAnywhere/Microcapital.PostcodeAnywhere.csproj -c Release --no-build -o '$(build.artifactStagingDirectory)'
+        runtime: 'core'
+
+    - task: NuGetCommand@2
+      displayName: 'nuget restore'
+      inputs:
+        command: 'restore'
+        restoreSolution: '**/*.sln'
+        feedsToUse: 'select'
+        vstsFeed: '30b3c958-b5a1-4cd0-af1e-a9179ee58323'
+
+    - task: DotNetCoreCLI@2
+      displayName: "Build Solution"
+      inputs:
+        command: build
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) /p:Version=$(GitVersion.NuGetVersion)'
+        versioningScheme: byBuildNumber
+        
+        
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet pack' 
+      inputs: 
+        command: pack
+        packagesToPack: '**/*.csproj'
+        nobuild: true 
+        versioningScheme: byEnvVar 
+        versionEnvVar: GitVersion.NuGetVersion    
+        configuration: release
+        
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
